@@ -217,7 +217,7 @@ function playBellSound() {
 }
 
 const sortedUsers = computed(() =>
-  users.value.slice().sort((a, b) => (a.handRaised === b.handRaised ? 0 : a.handRaised ? -1 : 1))
+  users.value.sort((a, b) => (a.handRaised === b.handRaised ? 0 : a.handRaised ? -1 : 1))
 )
 </script>
 
