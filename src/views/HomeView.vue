@@ -99,6 +99,21 @@
 import { computed, ref } from "vue";
 import { useDisplay } from "vuetify";
 
+import cleber from "@/assets/cleber.jpeg";
+import will from "@/assets/will.jpeg";
+import denini from "@/assets/denini.jpeg";
+import dayvid from "@/assets/dayvid.jpg";
+import cassio from "@/assets/cassio.jpg";
+import wedson from "@/assets/wesso.jpeg";
+import elivelton from "@/assets/eli.jpg";
+import thami from "@/assets/Thami.png";
+import ze from "@/assets/ze.jpg";
+import jorge from "@/assets/jorge.jpeg";
+import nara from "@/assets/nara.jpeg";
+import abel from "@/assets/abel.jpeg";
+import edu from "@/assets/edu.png";
+import geo from "@/assets/geovanis.jpg";
+
 interface User {
   id: number;
   name: string;
@@ -111,13 +126,12 @@ interface User {
 }
 
 const { mobile } = useDisplay();
-const bottomNav = ref(""); // Controle para navegação inferior
 
 const users = ref<User[]>([
   {
     id: 1,
     name: "Cleber",
-    profilePicture: "../src/assets/cleber.jpeg",
+    profilePicture: cleber,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -125,7 +139,7 @@ const users = ref<User[]>([
   {
     id: 2,
     name: "Will",
-    profilePicture: "../src/assets/will.jpeg",
+    profilePicture: will,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -133,7 +147,7 @@ const users = ref<User[]>([
   {
     id: 3,
     name: "Denini",
-    profilePicture: "../src/assets/denini.jpeg",
+    profilePicture: denini,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -141,7 +155,7 @@ const users = ref<User[]>([
   {
     id: 4,
     name: "Dayvid",
-    profilePicture: "../src/assets/dayvid.jpg",
+    profilePicture: dayvid,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -149,7 +163,7 @@ const users = ref<User[]>([
   {
     id: 5,
     name: "Wedson",
-    profilePicture: "../src/assets/wesso.jpeg",
+    profilePicture: wedson,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -157,7 +171,7 @@ const users = ref<User[]>([
   {
     id: 6,
     name: "Cássio",
-    profilePicture: "../src/assets/cassio.jpg",
+    profilePicture: cassio,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -165,7 +179,7 @@ const users = ref<User[]>([
   {
     id: 7,
     name: "Thami",
-    profilePicture: "../src/assets/Thami.png",
+    profilePicture: thami,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -173,7 +187,7 @@ const users = ref<User[]>([
   {
     id: 8,
     name: "Zé",
-    profilePicture: "../src/assets/ze.jpg",
+    profilePicture: ze,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -181,7 +195,7 @@ const users = ref<User[]>([
   {
     id: 9,
     name: "Edu",
-    profilePicture: "../src/assets/edu.png",
+    profilePicture: edu,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -189,7 +203,7 @@ const users = ref<User[]>([
   {
     id: 10,
     name: "Geo",
-    profilePicture: "../src/assets/geovanis.jpg",
+    profilePicture: geo,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -197,7 +211,7 @@ const users = ref<User[]>([
   {
     id: 11,
     name: "Jorge",
-    profilePicture: "../src/assets/jorge.jpeg",
+    profilePicture: jorge,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -205,7 +219,7 @@ const users = ref<User[]>([
   {
     id: 12,
     name: "Nara",
-    profilePicture: "../src/assets/nara.jpeg",
+    profilePicture: nara,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -213,7 +227,7 @@ const users = ref<User[]>([
   {
     id: 13,
     name: "Elivelton",
-    profilePicture: "../src/assets/eli.jpg",
+    profilePicture: elivelton,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
@@ -221,7 +235,7 @@ const users = ref<User[]>([
   {
     id: 14,
     name: "Abel",
-    profilePicture: "../src/assets/abel.jpeg",
+    profilePicture: abel,
     handRaised: false,
     timeRemaining: 0,
     timerActive: false,
