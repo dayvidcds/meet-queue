@@ -19,6 +19,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
+    active: true,
   },
 });
 
@@ -26,78 +27,94 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
-let users = [
+const originalList = [
   {
     id: 1,
     name: "Cleber",
     profilePicture: "cleber",
+    active: true,
   },
   {
     id: 2,
     name: "Will",
     profilePicture: "will",
+    active: true,
   },
   {
     id: 3,
     name: "Denini",
     profilePicture: "denini",
+    active: true,
   },
   {
     id: 4,
     name: "Dayvid",
     profilePicture: "dayvid",
+    active: true,
   },
   {
     id: 5,
     name: "Wedson",
     profilePicture: "wedson",
+    active: true,
   },
   {
     id: 6,
     name: "Cássio",
     profilePicture: "cassio",
+    active: true,
   },
   {
     id: 7,
     name: "Thami",
     profilePicture: "thami",
+    active: true,
   },
   {
     id: 8,
     name: "Zé",
     profilePicture: "ze",
+    active: true,
   },
   {
     id: 9,
     name: "Edu",
     profilePicture: "edu",
+    active: true,
   },
   {
     id: 10,
     name: "Geo",
     profilePicture: "geo",
+    active: true,
   },
   {
     id: 11,
     name: "Jorge",
     profilePicture: "jorge",
+    active: true,
   },
   {
     id: 12,
     name: "Nara",
     profilePicture: "nara",
+    active: true,
   },
   {
     id: 13,
     name: "Elivelton",
     profilePicture: "elivelton",
+    active: true,
   },
   {
     id: 14,
     name: "Abel",
     profilePicture: "abel",
+    active: true,
   },
 ];
+
+let users = [...originalList];
 
 let globalTimer = {
   active: false,
@@ -108,8 +125,8 @@ let globalTimer = {
 let timerIntervalId = null;
 
 function getSortedUsers() {
-  const handRaisedUsers = users.filter((u) => u.handRaised);
-  const otherUsers = users.filter((u) => !u.handRaised);
+  const handRaisedUsers = users.filter((u) => u.handRaised && u.active);
+  const otherUsers = users.filter((u) => !u.handRaised && u.active);
 
   handRaisedUsers.sort((a, b) => {
     return (
@@ -135,7 +152,11 @@ function moveUserToEnd(userId) {
 io.on("connection", (socket) => {
   console.log("New client connected");
 
-  socket.emit("initialData", { users: getSortedUsers(), globalTimer });
+  socket.emit("initialData", {
+    users: getSortedUsers(),
+    globalTimer,
+    globalUsers: originalList,
+  });
 
   socket.on("toggleHandRaised", (userId) => {
     const userIndex = users.findIndex((u) => u.id === userId);
@@ -198,6 +219,24 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");
+  });
+
+  socket.on("setActiveState", ({ userId, active }) => {
+    const userIndex = originalList.findIndex((u) => u.id === userId);
+
+    if (userIndex !== -1) {
+      const originalUser = originalList[userIndex];
+      const user = users[userIndex];
+
+      originalUser.active = active;
+      user.active = active;
+
+      io.emit("updateGlobalUserList", originalList);
+
+      const otherUsers = users.filter((u) => u.active);
+
+      io.emit("updateUsers", otherUsers);
+    }
   });
 });
 

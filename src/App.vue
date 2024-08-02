@@ -4,7 +4,7 @@ import { RouterView } from "vue-router";
 
 <template>
   <v-app>
-    <v-main class="bg-blue-grey-lighten-4">
+    <v-main class="bg">
       <v-container class="page-wrapper">
         <router-view v-slot="{ Component }">
           <v-fade-transition appear>
@@ -16,9 +16,16 @@ import { RouterView } from "vue-router";
   </v-app>
 </template>
 
-<style scoped>
+<style>
 .page-wrapper {
   padding: 0px !important;
   max-width: 1500px;
+}
+.bg {
+  background-color: #1f1f1f;
+}
+
+* {
+  overflow: hidden !important;
 }
 </style>
