@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="container">
     <div class="card-group">
-      <v-hover v-for="user in sortedUsers" :key="user.id">
+      <v-hover v-for="user in users" :key="user.id">
         <template v-slot:default="{ isHovering, props }">
           <v-card
             v-bind="props"
@@ -12,7 +12,7 @@
             class="card"
           >
             <v-img
-              :src="user.profilePicture"
+              :src="images[user.profilePicture]"
               class="card-image"
               gradient="to top, rgba(0,0,0,.1), rgba(0,0,0,.3)"
               cover
@@ -29,15 +29,16 @@
               <v-icon v-if="user.handRaised" class="hand-icon"
                 >mdi-hand-back-left</v-icon
               >
-              <div v-if="user.timerActive" class="timer">
-                {{ formatTime(user.timeRemaining) }}
+              <div
+                v-if="globalTimerActive && timerUserId === user.id"
+                class="timer"
+              >
+                {{ formatTime(globalTimeRemaining) }}
               </div>
             </v-img>
             <v-card-actions v-if="isHovering || mobile" class="hover-actions">
               <v-btn
-                @click.stop="
-                  user.timeRemaining ? stopTimer(user) : startTimer(user)
-                "
+                @click.stop="handleTimerAction(user)"
                 icon="mdi-clock-outline"
               />
             </v-card-actions>
@@ -96,189 +97,89 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref, onMounted } from "vue";
+import { io } from "socket.io-client";
 import { useDisplay } from "vuetify";
+import images from "@/constants/images";
 
-import cleber from "@/assets/cleber.jpeg";
-import will from "@/assets/will.jpeg";
-import denini from "@/assets/denini.jpeg";
-import dayvid from "@/assets/dayvid.jpg";
-import cassio from "@/assets/cassio.jpg";
-import wedson from "@/assets/wesso.jpeg";
-import elivelton from "@/assets/eli.jpg";
-import thami from "@/assets/Thami.png";
-import ze from "@/assets/ze.jpg";
-import jorge from "@/assets/jorge.jpeg";
-import nara from "@/assets/nara.jpeg";
-import abel from "@/assets/abel.jpeg";
-import edu from "@/assets/edu.png";
-import geo from "@/assets/geovanis.jpg";
+type ImageAssets = {
+  cleber: string;
+  will: string;
+  denini: string;
+  dayvid: string;
+  cassio: string;
+  wedson: string;
+  elivelton: string;
+  thami: string;
+  ze: string;
+  jorge: string;
+  nara: string;
+  abel: string;
+  edu: string;
+  geo: string;
+};
 
 interface User {
   id: number;
   name: string;
-  profilePicture: string;
+  profilePicture: keyof ImageAssets;
   handRaised: boolean;
   handRaisedTime?: string;
-  timerActive?: boolean;
-  timeRemaining?: number;
-  timerIntervalId?: any;
 }
 
 const { mobile } = useDisplay();
 
-const users = ref<User[]>([
-  {
-    id: 1,
-    name: "Cleber",
-    profilePicture: cleber,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 2,
-    name: "Will",
-    profilePicture: will,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 3,
-    name: "Denini",
-    profilePicture: denini,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 4,
-    name: "Dayvid",
-    profilePicture: dayvid,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 5,
-    name: "Wedson",
-    profilePicture: wedson,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 6,
-    name: "Cássio",
-    profilePicture: cassio,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 7,
-    name: "Thami",
-    profilePicture: thami,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 8,
-    name: "Zé",
-    profilePicture: ze,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 9,
-    name: "Edu",
-    profilePicture: edu,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 10,
-    name: "Geo",
-    profilePicture: geo,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 11,
-    name: "Jorge",
-    profilePicture: jorge,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 12,
-    name: "Nara",
-    profilePicture: nara,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 13,
-    name: "Elivelton",
-    profilePicture: elivelton,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-  {
-    id: 14,
-    name: "Abel",
-    profilePicture: abel,
-    handRaised: false,
-    timeRemaining: 0,
-    timerActive: false,
-  },
-]);
-
+const users = ref<User[]>([]);
 const bellSound = ref<HTMLAudioElement | null>(null);
 const menu = ref(false);
 const timerSeconds = ref<number>(60);
+const globalTimerActive = ref(false);
+const globalTimeRemaining = ref<number>(0);
+const timerUserId = ref<number | null>(null);
+const socket = io('https://navit-meet-queue-a873e187c7eb.herokuapp.com');
+
+socket.on("initialData", (data) => {
+  users.value = data.users;
+  globalTimerActive.value = data.globalTimer.active;
+  globalTimeRemaining.value = data.globalTimer.timeRemaining;
+  timerUserId.value = data.globalTimer.userId;
+});
+
+socket.on("updateUsers", (updatedUsers) => {
+  users.value = updatedUsers;
+});
+
+socket.on("updateGlobalTimer", (timerData) => {
+  globalTimerActive.value = timerData.active;
+  globalTimeRemaining.value = timerData.timeRemaining;
+  timerUserId.value = timerData.userId;
+});
+
+socket.on("playBellSound", () => {
+  if (bellSound.value) {
+    bellSound.value.play().catch((error) => {
+      console.error("Erro ao reproduzir o som:", error);
+    });
+  }
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Connection error:', error);
+});
 
 function toggleHandRaised(user: User) {
-  if (user.handRaised) {
-    stopTimer(user);
-  }
-  user.handRaised = !user.handRaised;
-  user.handRaisedTime = user.handRaised
-    ? new Date().toLocaleTimeString()
-    : undefined;
+  socket.emit("toggleHandRaised", user.id);
 }
 
-function startTimer(user: User) {
-  if (user.timerActive) return;
-  user.timerActive = true;
-  user.timeRemaining = timerSeconds.value;
-
-  user.timerIntervalId = setInterval(() => {
-    if (user.timeRemaining && user.timeRemaining > 0) {
-      user.timeRemaining--;
-    } else {
-      clearInterval(user.timerIntervalId);
-      user.timerActive = false;
-      user.handRaised = false;
-      playBellSound();
-    }
-  }, 1000);
-}
-
-function stopTimer(user: User) {
-  if (user.timerIntervalId) {
-    clearInterval(user.timerIntervalId);
+function handleTimerAction(user: User) {
+  if (globalTimerActive.value && timerUserId.value === user.id) {
+    socket.emit("stopGlobalTimer");
+  } else {
+    socket.emit("startGlobalTimer", {
+      userId: user.id,
+      timerSeconds: timerSeconds.value,
+    });
   }
-  user.timerActive = false;
-  user.timeRemaining = 0;
 }
 
 function formatTime(seconds: number | undefined): string {
@@ -288,93 +189,19 @@ function formatTime(seconds: number | undefined): string {
   return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
-function playBellSound() {
-  if (bellSound.value) {
-    bellSound.value.play().catch((error) => {
-      console.error("Erro ao reproduzir o som:", error);
-    });
-  }
-}
-
-const sortedUsers = computed(() =>
-  users.value.sort((a, b) =>
-    a.handRaised === b.handRaised ? 0 : a.handRaised ? -1 : 1
-  )
-);
-
 function selectParticipants() {
-  // Lógica para selecionar participantes
   console.log("Selecionar Participantes");
 }
 
 function setTimer() {
   menu.value = false;
 }
+
+onMounted(() => {
+  if (bellSound.value) {
+    bellSound.value.load();
+  }
+});
 </script>
 
-<style scoped>
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-}
-
-.card-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  .card-group {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  }
-}
-
-.card-image {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  position: relative;
-}
-
-.hand-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 48px;
-  opacity: 0.8;
-}
-
-.hand-time {
-  margin-top: -0.6rem;
-}
-
-.timer {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  font-size: 20px;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 5px;
-  border-radius: 3px;
-}
-
-.hover-actions {
-  display: flex;
-  justify-content: end;
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.5);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  transition: opacity 0.3s ease;
-  background-color: transparent;
-}
-</style>
+<style scoped lang="scss" src="./style.scss" />
