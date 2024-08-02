@@ -24,7 +24,7 @@
               <v-card-subtitle
                 v-if="user.handRaised"
                 class="hand-time"
-                v-text="user.handRaisedTime"
+                v-text="formatHandRaisedDate(user.handRaisedTime)"
               />
               <v-icon v-if="user.handRaised" class="hand-icon"
                 >mdi-hand-back-left</v-icon
@@ -36,7 +36,10 @@
                 {{ formatTime(globalTimeRemaining) }}
               </div>
             </v-img>
-            <v-card-actions v-if="isHovering || mobile" class="hover-actions">
+            <v-card-actions
+              v-if="user.handRaised && (isHovering || mobile)"
+              class="hover-actions"
+            >
               <v-btn
                 @click.stop="handleTimerAction(user)"
                 icon="mdi-clock-outline"
@@ -136,7 +139,7 @@ const timerSeconds = ref<number>(60);
 const globalTimerActive = ref(false);
 const globalTimeRemaining = ref<number>(0);
 const timerUserId = ref<number | null>(null);
-const socket = io('https://navit-meet-queue-a873e187c7eb.herokuapp.com');
+const socket = io("https://navit-meet-queue-a873e187c7eb.herokuapp.com");
 
 socket.on("initialData", (data) => {
   users.value = data.users;
@@ -163,8 +166,8 @@ socket.on("playBellSound", () => {
   }
 });
 
-socket.on('connect_error', (error) => {
-  console.error('Connection error:', error);
+socket.on("connect_error", (error) => {
+  console.error("Connection error:", error);
 });
 
 function toggleHandRaised(user: User) {
@@ -179,6 +182,12 @@ function handleTimerAction(user: User) {
       userId: user.id,
       timerSeconds: timerSeconds.value,
     });
+  }
+}
+
+function formatHandRaisedDate(timer?: string) {
+  if (timer) {
+    return new Date(timer).toLocaleTimeString();
   }
 }
 
