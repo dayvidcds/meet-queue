@@ -3,7 +3,7 @@
     <v-card class="pa-0 ma-4" color="surface" elevation="0">
       <perfect-scrollbar
         :style="{
-          height: 'calc(100vh - 101px)',
+          height: 'calc(100vh - 106px)',
           width: `calc(100vw - ${drawer ? '370px' : '32px'})`,
         }"
       >
@@ -65,14 +65,10 @@
     <source src="../assets/bicycle-horn-7126.mp3" type="audio/mpeg" />
   </audio>
 
-  <v-app-bar color="transparent" location="bottom" class="pa-1" elevation="0">
-    <v-card
-      class="w-100 rounded-pill pt-0"
-      elevation="0"
-      style="background-color: #20212400"
-    >
+  <v-app-bar color="transparent" location="bottom" class="pa-1" elevation="0" height="82">
+    <v-card class="w-100 rounded-pill mx-2" elevation="0">
       <v-card-title
-        class="d-flex justify-space-between align-center pt-0"
+        class="d-flex justify-space-between align-center"
         style="color: aliceblue"
       >
         <span>{{ pageTitle }}</span>
@@ -125,7 +121,7 @@
     location="right"
     permanent
     color="transparent"
-    class="pb-5 pt-4 pr-4 pl-0"
+    class="pb-2 pt-4 pr-4 pl-0"
     width="340"
     :border="0"
   >
@@ -135,7 +131,7 @@
       <v-card-text>
         <perfect-scrollbar
           :style="{
-            height: 'calc(100vh - 160px)',
+            height: 'calc(100vh - 180px)',
           }"
         >
           <v-card
