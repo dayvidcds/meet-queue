@@ -1,10 +1,9 @@
 <template>
   <v-container fluid class="container">
-    <v-card class="pa-0 ma-4" color="surface" elevation="0">
+    <v-card class="pa-4 ma-4 w-100" color="surface" elevation="0">
       <perfect-scrollbar
         :style="{
-          height: 'calc(100vh - 106px)',
-          width: `calc(100vw - ${drawer ? '370px' : '32px'})`,
+          height: 'calc(100vh - 9rem)',
         }"
       >
         <div class="card-group">
@@ -14,8 +13,7 @@
                 v-bind="props"
                 color="#202124"
                 :elevation="0"
-                tile
-                class=""
+                class="rounded-lg"
                 @click.stop="toggleHandRaised(user)"
               >
                 <v-img
@@ -65,7 +63,13 @@
     <source src="../assets/bicycle-horn-7126.mp3" type="audio/mpeg" />
   </audio>
 
-  <v-app-bar color="transparent" location="bottom" class="pa-1" elevation="0" height="82">
+  <v-app-bar
+    color="transparent"
+    location="bottom"
+    class="pa-1"
+    elevation="0"
+    height="82"
+  >
     <v-card class="w-100 rounded-pill mx-2" elevation="0">
       <v-card-title
         class="d-flex justify-space-between align-center"
@@ -121,7 +125,7 @@
     location="right"
     permanent
     color="transparent"
-    class="pb-2 pt-4 pr-4 pl-0"
+    class="pb-3 pt-4 pr-4 pl-0"
     width="340"
     :border="0"
   >
@@ -131,7 +135,7 @@
       <v-card-text>
         <perfect-scrollbar
           :style="{
-            height: 'calc(100vh - 180px)',
+            height: 'calc(100vh - 12rem)',
           }"
         >
           <v-card
@@ -217,6 +221,7 @@ const globalTimerActive = ref(false);
 const globalTimeRemaining = ref<number>(0);
 const timerUserId = ref<number | null>(null);
 const pageTitle = ref("Navit meet queue");
+
 const socket = io("https://navit-meet-queue-a873e187c7eb.herokuapp.com");
 
 socket.on("initialData", (data) => {

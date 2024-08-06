@@ -19,7 +19,6 @@ import { RouterView } from "vue-router";
 <style>
 .page-wrapper {
   padding: 0px !important;
-  max-width: 1500px;
 }
 .bg {
   background-color: #1f1f1f;
