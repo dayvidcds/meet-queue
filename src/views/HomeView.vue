@@ -130,7 +130,30 @@
     :border="0"
   >
     <v-card class="h-100 pa-0" color="surface">
-      <v-card-title v-text="'Participantes'" />
+      <v-card-title class="d-flex align-center justify-space-between">
+        <span>Participantes</span>
+        <v-btn icon flat>
+          <v-icon>mdi-cog</v-icon>
+          <v-menu
+            v-model="configMenu"
+            activator="parent"
+            :close-on-content-click="false"
+            offset-y
+            offset="8"
+            width="260"
+          >
+            <v-card>
+              <v-list>
+                <v-list-item
+                  @click.stop="handleRestoreData"
+                  prepend-icon="mdi-arrow-u-left-top"
+                  >Restaurar informações</v-list-item
+                >
+              </v-list>
+            </v-card>
+          </v-menu>
+        </v-btn>
+      </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
         <perfect-scrollbar
@@ -163,9 +186,12 @@
               <v-col class="text-left" cols="6">
                 <strong v-html="user.name"></strong>
               </v-col>
-              <!-- <v-col cols="2" v-if="user.handRaised">
+              <v-col cols="2" class="d-flex align-center ga-2">
                 <v-icon icon="mdi-hand-back-left" size="16" />
-              </v-col> -->
+                <span class="text-subtitle-2">{{
+                  getHandCountByUser(user)
+                }}</span>
+              </v-col>
             </v-row>
           </v-card>
         </perfect-scrollbar>
@@ -175,11 +201,11 @@
 </template>
 
 <script setup lang="ts">
-import images from "@/constants/images";
-import { io } from "socket.io-client";
-import { computed } from "vue";
-import { onMounted, ref } from "vue";
-import { useDisplay } from "vuetify";
+import images from '@/constants/images';
+import { io } from 'socket.io-client';
+import { computed } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useDisplay } from 'vuetify';
 
 type ImageAssets = {
   cleber: string;
@@ -205,6 +231,7 @@ interface User {
   handRaised: boolean;
   handRaisedTime?: string;
   active: boolean;
+  handCount: number;
 }
 
 const { width } = useDisplay();
@@ -216,15 +243,16 @@ const globalUsers = ref<User[]>([]);
 
 const bellSound = ref<HTMLAudioElement | null>(null);
 const menu = ref(false);
+const configMenu = ref(false);
 const timerSeconds = ref<number>(60);
 const globalTimerActive = ref(false);
 const globalTimeRemaining = ref<number>(0);
 const timerUserId = ref<number | null>(null);
-const pageTitle = ref("Navit meet queue");
+const pageTitle = ref('Navit meet queue');
 
-const socket = io("https://navit-meet-queue-a873e187c7eb.herokuapp.com");
+const socket = io('https://navit-meet-queue-a873e187c7eb.herokuapp.com');
 
-socket.on("initialData", (data) => {
+socket.on('initialData', (data) => {
   users.value = data.users;
   globalUsers.value = data.globalUsers;
   globalTimerActive.value = data.globalTimer.active;
@@ -232,30 +260,30 @@ socket.on("initialData", (data) => {
   timerUserId.value = data.globalTimer.userId;
 });
 
-socket.on("updateUsers", (updatedUsers) => {
+socket.on('updateUsers', (updatedUsers) => {
   users.value = updatedUsers;
 });
 
-socket.on("updateGlobalTimer", (timerData) => {
+socket.on('updateGlobalTimer', (timerData) => {
   globalTimerActive.value = timerData.active;
   globalTimeRemaining.value = timerData.timeRemaining;
   timerUserId.value = timerData.userId;
 });
 
-socket.on("playBellSound", () => {
+socket.on('playBellSound', () => {
   if (bellSound.value) {
     bellSound.value.play().catch((error) => {
-      console.error("Erro ao reproduzir o som:", error);
+      console.error('Erro ao reproduzir o som:', error);
     });
   }
 });
 
-socket.on("updateGlobalUserList", (users) => {
+socket.on('updateGlobalUserList', (users) => {
   globalUsers.value = users;
 });
 
-socket.on("connect_error", (error) => {
-  console.error("Connection error:", error);
+socket.on('connect_error', (error) => {
+  console.error('Connection error:', error);
 });
 
 const getGlobalUsers = computed<User[]>(() =>
@@ -263,18 +291,23 @@ const getGlobalUsers = computed<User[]>(() =>
 );
 
 function toggleHandRaised(user: User) {
-  socket.emit("toggleHandRaised", user.id);
+  socket.emit('toggleHandRaised', user.id);
 }
 
 function handleTimerAction(user: User) {
   if (globalTimerActive.value && timerUserId.value === user.id) {
-    socket.emit("stopGlobalTimer");
+    socket.emit('stopGlobalTimer');
   } else {
-    socket.emit("startGlobalTimer", {
+    socket.emit('startGlobalTimer', {
       userId: user.id,
       timerSeconds: timerSeconds.value,
     });
   }
+}
+
+function handleRestoreData() {
+  configMenu.value = false;
+  socket.emit('restoreGlobalConfiguration');
 }
 
 function formatHandRaisedDate(timer?: string) {
@@ -284,10 +317,10 @@ function formatHandRaisedDate(timer?: string) {
 }
 
 function formatTime(seconds: number | undefined): string {
-  if (seconds === undefined) return "00:00";
+  if (seconds === undefined) return '00:00';
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
 function selectParticipants() {
@@ -299,10 +332,14 @@ function setTimer() {
 }
 
 function handleUpdateParticipantsList(state: boolean, user: User) {
-  socket.emit("setActiveState", {
+  socket.emit('setActiveState', {
     userId: user.id,
     active: state,
   });
+}
+
+function getHandCountByUser(user: User): number {
+  return users.value.find((e) => e.id === user.id)?.handCount ?? 0;
 }
 
 onMounted(() => {
