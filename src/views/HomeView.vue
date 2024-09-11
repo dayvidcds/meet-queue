@@ -236,6 +236,8 @@ interface User {
 
 const { width } = useDisplay();
 
+//teste
+
 const drawer = ref(false);
 
 const users = ref<User[]>([]);
