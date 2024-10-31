@@ -12,6 +12,7 @@ import nara from "@/assets/nara.jpeg";
 import abel from "@/assets/abel.jpeg";
 import edu from "@/assets/edu.png";
 import geo from "@/assets/geovanis.jpg";
+import clara from "@/assets/clara.jpeg";
 
 const images = {
   cleber,
@@ -20,6 +21,7 @@ const images = {
   dayvid,
   cassio,
   wedson,
+  clara,
   elivelton,
   thami,
   ze,
